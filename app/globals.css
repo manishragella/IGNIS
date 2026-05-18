@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 249 100% 63%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 245 58% 51%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 199 100% 43%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 249 100% 63%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Gradient backgrounds */
+  .ignis-gradient {
+    background: linear-gradient(135deg, #6244ff 0%, #a855f7 50%, #06b6d4 100%);
+  }
+
+  .ignis-gradient-soft {
+    background: linear-gradient(135deg, rgba(98, 68, 255, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+  }
+
+  .ignis-gradient-text {
+    background: linear-gradient(135deg, #6244ff 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glass card effect */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 24px rgba(98, 68, 255, 0.08);
+  }
+
+  .glass-card-dark {
+    background: rgba(98, 68, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(98, 68, 255, 0.15);
+  }
+
+  /* Premium card */
+  .premium-card {
+    @apply bg-white rounded-2xl border border-slate-100 shadow-sm transition-all duration-300;
+    box-shadow: 0 2px 16px rgba(98, 68, 255, 0.06);
+  }
+
+  .premium-card:hover {
+    box-shadow: 0 8px 32px rgba(98, 68, 255, 0.12);
+    transform: translateY(-2px);
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-200;
+    background: linear-gradient(135deg, #6244ff 0%, #8b5cf6 100%);
+    box-shadow: 0 4px 14px rgba(98, 68, 255, 0.35);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(98, 68, 255, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 border;
+    @apply bg-white text-slate-700 border-slate-200;
+  }
+
+  .btn-secondary:hover {
+    @apply bg-slate-50 border-slate-300;
+  }
+
+  /* Input styles */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400;
+    @apply placeholder:text-slate-400;
+  }
+
+  /* Score badge */
+  .score-badge {
+    @apply inline-flex items-center justify-center w-12 h-12 rounded-full font-bold text-lg;
+  }
+
+  /* Sidebar */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium transition-all duration-200 cursor-pointer;
+  }
+
+  .sidebar-item:hover {
+    @apply bg-indigo-50 text-indigo-600;
+  }
+
+  .sidebar-item.active {
+    @apply bg-indigo-50 text-indigo-600;
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply bg-slate-200 rounded-lg animate-pulse;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Status badge */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* Worksheet section */
+  .worksheet-section {
+    @apply p-5 rounded-xl border-l-4 mb-4;
+  }
+
+  /* Score bar */
+  .score-bar {
+    @apply h-2 rounded-full bg-slate-100 overflow-hidden;
+  }
+
+  .score-bar-fill {
+    @apply h-full rounded-full transition-all duration-700 ease-out;
+    background: linear-gradient(90deg, #6244ff, #8b5cf6);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a5b4fc;
+}
+
+/* Print styles for PDF export */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+}
