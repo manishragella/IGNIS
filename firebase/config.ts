@@ -1,6 +1,39 @@
-// Firebase config — NOT USED IN DEMO MODE
-// Placeholder to prevent import errors if any old imports remain
-export const auth = null;
-export const db = null;
-export const storage = null;
-export default null;
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
+// Check if Firebase is actually configured with non-placeholder values
+const isFirebaseConfigured =
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
+  !process.env.NEXT_PUBLIC_FIREBASE_API_KEY.includes('your_') &&
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+  !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID.includes('your_');
+
+let app;
+let auth: any = null;
+let db: any = null;
+let storage: any = null;
+
+if (isFirebaseConfigured) {
+  try {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+  }
+}
+
+export { auth, db, storage };
+export default app;

@@ -22,6 +22,7 @@ Return a valid JSON object with this EXACT structure (no markdown, no extra text
   "objectives": ["Learning objective 1", "Learning objective 2", "Learning objective 3"],
   "estimatedTime": "45 minutes",
   "materials": ["Material 1", "Material 2"],
+  "imagePrompt": "A highly detailed, child-friendly, colorful vector illustration prompt describing an educational scene relevant to the topic. Do NOT include any text inside the image. Keep it descriptive (e.g. 'A vibrant modern village showing solar panels on roofs, small wind turbines, green vegetable patches, a modern schoolhouse, children playing together, and clear blue sky.')",
   "instructions": "Detailed step-by-step instructions for the teacher to facilitate this activity",
   "discussionQuestions": [
     "Discussion question 1?",

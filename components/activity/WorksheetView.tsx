@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GeneratedActivity, RubricItem } from '@/types';
 import {
   Download,
@@ -16,9 +16,15 @@ import {
   ChevronUp,
   Printer,
   Bookmark,
+  Wand2,
+  Loader2,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { updateActivity } from '@/services/firestore';
+import { uploadGeneratedImage } from '@/services/storage';
 
 interface WorksheetViewProps {
   activity: GeneratedActivity;
@@ -46,8 +52,65 @@ export default function WorksheetView({
   lifeSkillFocus,
   onReset,
 }: WorksheetViewProps) {
+  const { user } = useAuth();
   const [showRubric, setShowRubric] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState(activity.imageUrl || '/images/textbook-illustration-fallback.svg');
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  useEffect(() => {
+    setCurrentImageUrl(activity.imageUrl || '/images/textbook-illustration-fallback.svg');
+  }, [activity.imageUrl]);
+
+  const handleRegenerateImage = async () => {
+    if (!activity.imagePrompt) {
+      toast.error('No image prompt available for this activity.');
+      return;
+    }
+
+    setIsRegenerating(true);
+    const loadingToast = toast.loading('Creating new textbook illustration...');
+
+    try {
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: activity.imagePrompt }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate visual');
+
+      let finalImageUrl = data.imageUrl;
+
+      // If Firebase is configured and user is logged in, upload the image to Firebase Storage
+      if (user && finalImageUrl.startsWith('data:')) {
+        try {
+          const uploadedUrl = await uploadGeneratedImage(finalImageUrl, user.uid, topic || 'activity');
+          finalImageUrl = uploadedUrl;
+        } catch (err) {
+          console.error('Failed to upload regenerated image:', err);
+        }
+      }
+
+      setCurrentImageUrl(finalImageUrl);
+
+      // If saved in Firestore/localStorage, update the database entry
+      if (activityId) {
+        const updatedGeneratedContent = {
+          ...activity,
+          imageUrl: finalImageUrl,
+        };
+        await updateActivity(activityId, { generatedContent: updatedGeneratedContent });
+      }
+
+      toast.success('New visual generated successfully! ✨', { id: loadingToast });
+    } catch (error: any) {
+      toast.error(error.message || 'Image regeneration failed', { id: loadingToast });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     setDownloading(true);
@@ -173,6 +236,42 @@ export default function WorksheetView({
                 <div className="text-xs text-slate-400">{item.label}</div>
               </div>
             ))}
+          </div>
+
+          {/* AI Generated Illustration */}
+          <div className="relative group overflow-hidden rounded-2xl border border-slate-100 bg-white p-2 shadow-sm">
+            {isRegenerating ? (
+              <div className="w-full aspect-[4/3] sm:aspect-[16/9] max-h-[350px] bg-slate-50/50 flex flex-col items-center justify-center gap-3 rounded-xl min-h-[250px]">
+                <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                <p className="text-slate-400 text-sm font-medium">Re-imagining textbook illustration...</p>
+              </div>
+            ) : (
+              <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] max-h-[350px] overflow-hidden rounded-xl bg-slate-50 flex items-center justify-center min-h-[250px]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentImageUrl}
+                  alt={activity.title}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+                />
+                
+                {/* Overlay Action Bar for regeneration */}
+                {activity.imagePrompt && (
+                  <div className="absolute bottom-4 right-4 flex items-center gap-2 no-print">
+                    <button
+                      onClick={handleRegenerateImage}
+                      disabled={isRegenerating}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-white/95 hover:bg-white text-indigo-600 hover:text-indigo-700 text-xs font-bold rounded-xl shadow-md backdrop-blur-sm transition-all duration-200"
+                    >
+                      <Wand2 className="w-3.5 h-3.5" />
+                      <span>Regenerate Visual</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="px-4 py-2 bg-slate-50/50 rounded-b-xl border-t border-slate-50 text-center text-xs text-slate-400 italic">
+              Textbook Style Illustration for: &ldquo;{topic || activity.title}&rdquo;
+            </div>
           </div>
 
           {/* Objectives */}

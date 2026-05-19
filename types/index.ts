@@ -22,6 +22,8 @@ export interface Activity {
   createdBy: string;
   createdAt: string;
   status: 'draft' | 'active' | 'archived';
+  imageUrl?: string;
+  pdfUrl?: string;
 }
 
 export interface GeneratedActivity {
@@ -34,6 +36,8 @@ export interface GeneratedActivity {
   worksheet: WorksheetSection[];
   estimatedTime: string;
   materials: string[];
+  imageUrl?: string;
+  imagePrompt?: string;
 }
 
 export interface WorksheetSection {

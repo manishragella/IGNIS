@@ -293,7 +293,7 @@ export default function SubmissionsPage() {
                 ) : (
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Student's Written Response
+                      Student&apos;s Written Response
                     </label>
                     <textarea
                       value={submissionText}
@@ -452,7 +452,7 @@ export default function SubmissionsPage() {
                     AI Overall Feedback
                   </h3>
                   <p className="text-slate-700 text-sm leading-relaxed italic">
-                    "{feedback.overallComment}"
+                    &quot;{feedback.overallComment}&quot;
                   </p>
                 </div>
 

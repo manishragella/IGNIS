@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/shared/DashboardLayout';
 import WorksheetView from '@/components/activity/WorksheetView';
 import { createActivity } from '@/services/firestore';
+import { uploadGeneratedImage } from '@/services/storage';
 import { GeneratedActivity, Activity } from '@/types';
 import {
   Sparkles,
@@ -85,6 +86,19 @@ export default function ActivityGeneratorPage() {
 
       // Auto-save to Firestore
       if (user) {
+        let finalImageUrl = data.activity.imageUrl || '';
+        
+        // If the image is a base64 Data URL, upload it to Firebase Storage
+        if (finalImageUrl.startsWith('data:')) {
+          try {
+            const uploadedUrl = await uploadGeneratedImage(finalImageUrl, user.uid, topic);
+            finalImageUrl = uploadedUrl;
+            data.activity.imageUrl = uploadedUrl;
+          } catch (err) {
+            console.error('Failed to upload illustration on auto-save:', err);
+          }
+        }
+
         const activityData: Omit<Activity, 'id'> = {
           title: data.activity.title,
           grade,
@@ -95,6 +109,7 @@ export default function ActivityGeneratorPage() {
           createdBy: user.uid,
           createdAt: new Date().toISOString(),
           status: 'active',
+          imageUrl: finalImageUrl || undefined,
         };
         const id = await createActivity(activityData);
         setSavedId(id);
