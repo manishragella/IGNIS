@@ -42,6 +42,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/")
+def read_root():
+    return {
+        "status": "Ignis AI Facilitator API is online 🔥",
+        "version": "1.0.0",
+        "author": "Ignis Team"
+    }
+
 # Parsers
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     from pypdf import PdfReader
