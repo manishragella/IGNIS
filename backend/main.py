@@ -157,6 +157,7 @@ async def generate_activity(
         # Document Parsing
         context_text = ""
         citations = []
+        source_id = 1
 
         if files:
             for upload_file in files:
@@ -173,24 +174,28 @@ async def generate_activity(
                         file_text = "[Unsupported file format]"
                 
                 if file_text and len(file_text) > 10:
-                    context_text += f"\nSource File: {upload_file.filename}\n{file_text[:10000]}\n" # Cap at 10k chars per file
+                    context_text += f"\nSource [{source_id}] (File): {upload_file.filename}\n{file_text[:8000]}\n" # Cap at 8k chars per file
                     citations.append({
+                        "id": source_id,
                         "source": upload_file.filename,
                         "type": "File",
-                        "summary": f"Extracted key context from uploaded file: {upload_file.filename}."
+                        "summary": f"Provided background ideas and guidelines about '{topic}'."
                     })
+                    source_id += 1
         
         if links_list:
             for link in links_list:
                 if link.startswith('http'):
                     link_text = fetch_and_extract_from_link(link)
                     if link_text:
-                        context_text += f"\n{link_text}\n"
+                        context_text += f"\nSource [{source_id}] (Link): {link}\n{link_text}\n"
                         citations.append({
+                            "id": source_id,
                             "source": link,
                             "type": "Link",
                             "summary": f"Retrieved web documentation reference."
                         })
+                        source_id += 1
 
         # Hyper-Personalization details based on Grade Level
         # Adapt cognitive capability, sentence structure, and task complexity
@@ -216,13 +221,18 @@ async def generate_activity(
         system_prompt = f"""
         You are an expert educational facilitator for Ignis, an activity-based learning platform tailored specifically for the Indian educational context.
         
-        Generate a comprehensive, hyper-personalized, step-by-step classroom activity worksheet.
+        Generate a comprehensive, hyper-personalized, step-by-step classroom activity worksheet and gamified self-learning widgets.
+        
+        CRITICAL - INLINE CITATIONS & REFERENCES:
+        We have parsed reference source materials from the user. These are numbered as Source [1], Source [2], etc.
+        - Whenever you use factual claims, concepts, or terms directly sourced from these reference materials, you MUST append a superscript-style citation, e.g., '[1]', '[2]' in your text content (for example: "Rainwater harvesting has been practiced in India for thousands of years [1]...").
+        - Keep citations clean, numerical, and map them precisely. Only reference valid, existing source numbers. Do not invent source IDs.
         
         CRITICAL - INDIAN CONTEXT ENFORCEMENT:
         You MUST design this activity with rich Indian cultural references, local settings, and relatable naming conventions:
-        - Settings: Set activities in diverse Indian environments (e.g., a green schoolyard in Pune, a village water panchayat near Jaipur, a municipal park in Kochi).
-        - Names: Use common Indian names for student roles and scenarios (e.g. Aarav, Priya, Rohan, Sunita, Kabir, Meera, Arjun, Ananya).
-        - Local Contexts: Reference relatable Indian items, issues, or topics (e.g., monsoon rainwater collection, local street play 'Nukkad Natak', regional crops like ragi/paddy, traditional crafts, local community helpers).
+        - Settings: Set activities in diverse Indian environments (e.g., Pune, a village panchayat near Jaipur, a municipal school in Kochi).
+        - Names: Use common Indian names for student roles (e.g. Aarav, Priya, Rohan, Sunita, Kabir, Meera, Arjun, Ananya).
+        - Local Contexts: Reference relatable Indian items or issues (e.g. monsoons, regional crops, traditional crafts, local community helpers).
         
         Generate a valid JSON object matching the following structure EXACTLY:
         {{
@@ -230,13 +240,13 @@ async def generate_activity(
           "objectives": ["Objective 1", "Objective 2", "Objective 3"],
           "estimatedTime": "e.g. 45 minutes",
           "materials": ["Material 1", "Material 2"],
-          "teacherInstructions": "Detailed overview instructions for the teacher to facilitate",
+          "teacherInstructions": "Detailed overview instructions for the teacher to facilitate, including any inline citations like [1] where appropriate.",
           "presentationTask": "Description of what students will present or create as final output",
           "slides": [
             {{
               "stepNumber": 1,
               "stepTitle": "Title of Step 1 (e.g., Warm Up / Introduction)",
-              "stepContent": "Clear, engaging explanation of this step tailored for the classroom. Mention concrete actions.",
+              "stepContent": "Clear, engaging explanation of this step tailored for the classroom. Can include citations like [1].",
               "imagePrompt": "A highly detailed, child-friendly, colorful vector illustration prompt describing an educational scene relevant to this step. Must feature Indian students or teachers in school uniforms, South Asian descent, vibrant Indian colors, no text, clean educational vector style."
             }},
             {{
@@ -255,12 +265,12 @@ async def generate_activity(
           "worksheet": [
             {{
               "heading": "Introduction & Context",
-              "content": "Student-facing warm up written in accessible grade-level language",
+              "content": "Student-facing warm up written in accessible grade-level language. Append citations like [1] where appropriate.",
               "type": "instructions"
             }},
             {{
               "heading": "Our Main Action Task",
-              "content": "Detailed step-by-step instructions written directly for the students",
+              "content": "Detailed step-by-step instructions written directly for the students. Include inline citations.",
               "type": "activity"
             }},
             {{
@@ -284,7 +294,48 @@ async def generate_activity(
               "developing": "Developing description",
               "beginning": "Beginning description"
             }}
-          ]
+          ],
+          "citations": [
+            {{
+              "id": 1,
+              "source": "Name of Source 1",
+              "summary": "1-2 sentence summary of what factual information was extracted and applied in this activity."
+            }}
+          ],
+          "creativity_rationale": {{
+            "factual_basis": "Explain in detail which factual parts of the activity were directly extracted from the source files or links (citing [1], [2], etc.). Keep it professional, monochromatic, and educational.",
+            "creative_adaptations": "Explain the creative choices made (e.g. why we selected Pune as the location, why Rohan and Priya are water heroes, why this specific game/sorting metaphor was chosen for this class level) to increase engagement."
+          }},
+          "gamified_activities": {{
+            "sorting": {{
+              "title": "Sorting Challenge",
+              "description": "Drag or click the scenarios to place them into the correct categories!",
+              "categories": ["Category A (e.g. Do's)", "Category B (e.g. Don'ts)"],
+              "scenarios": [
+                {{
+                  "id": "s1",
+                  "text": "Scenario 1 (e.g. Turning off the tap)",
+                  "correctCategory": "Category A"
+                }},
+                {{
+                  "id": "s2",
+                  "text": "Scenario 2 (e.g. Leaving water running)",
+                  "correctCategory": "Category B"
+                }}
+              ]
+            }},
+            "blanks": {{
+              "title": "Vocabulary Fill-in-the-Blanks",
+              "description": "Fill in the missing words to complete the sentences correctly!",
+              "sentences": [
+                {{
+                  "text_before": "Text before the blank (e.g. The Pune school has a water )",
+                  "blank_key": "tank",
+                  "text_after": " to save monsoons."
+                }}
+              ]
+            }}
+          }}
         }}
         """
 
@@ -304,7 +355,7 @@ async def generate_activity(
         
         {reference_context_str}
         
-        If source context is provided, synthesize it logically into the activity and ensure the ideas reflect the uploaded content.
+        If source context is provided, synthesize it logically into the activity, include exact inline superscript citations (like [1], [2]) mapping back to the Source IDs, list citations in the citations array, write the AI insights, and construct the two customized playable games in 'gamified_activities'.
         Return ONLY the raw JSON block. No markdown markers (like ```json), no trailing text.
         """
 
@@ -329,14 +380,26 @@ async def generate_activity(
         activity_data = json.loads(res_text)
 
         # Synthesize citations with AI summary
-        if citations and "citations" not in activity_data:
-            # Let's add the parsed citations
-            for cit in citations:
-                # Add a tailored summary based on the topic
-                cit["summary"] = f"Provided background ideas and vocabulary definitions about '{topic}' used in crafting the worksheet."
-            activity_data["citations"] = citations
-        elif "citations" not in activity_data:
-            activity_data["citations"] = []
+        generated_citations = activity_data.get("citations", [])
+        if citations:
+            citations_map = {c["id"]: c for c in citations}
+            merged_citations = []
+            for gen_cit in generated_citations:
+                cit_id = gen_cit.get("id")
+                if cit_id in citations_map:
+                    merged_citations.append({
+                        "id": cit_id,
+                        "source": citations_map[cit_id]["source"],
+                        "type": citations_map[cit_id]["type"],
+                        "summary": gen_cit.get("summary", citations_map[cit_id]["summary"])
+                    })
+                else:
+                    merged_citations.append(gen_cit)
+            if not merged_citations:
+                merged_citations = citations
+            activity_data["citations"] = merged_citations
+        else:
+            activity_data["citations"] = generated_citations
 
         # Generate illustrations if enabled
         if include_illustrations and "slides" in activity_data:
@@ -479,8 +542,8 @@ async def export_ppt(req: ExportRequest):
             fill_s.fore_color.rgb = white_text
             
             step_num = step.get("stepNumber", 1)
-            step_title = step.get("stepTitle", f"Step {step_num}")
-            step_content = step.get("stepContent", "")
+            step_title = re.sub(r'\[\d+\]', '', step.get("stepTitle", f"Step {step_num}")).strip()
+            step_content = re.sub(r'\[\d+\]', '', step.get("stepContent", "")).strip()
             img_url = step.get("imageUrl", "")
             
             # Check if we should insert the illustration
@@ -785,7 +848,35 @@ async def export_docx(req: ExportRequest):
                 r_cite_s.font.italic = True
                 r_cite_s.font.color.rgb = slate_gray
 
-        # Save to Stream
+        # Section 9: Creativity Rationale (AI Insights)
+        rationale = activity.get("creativity_rationale")
+        if rationale:
+            doc.add_page_break()
+            h9 = doc.add_heading(level=1)
+            r9 = h9.add_run("9. AI INSIGHTS & PEDAGOGICAL RATIONALE")
+            r9.font.bold = True
+            r9.font.size = DocPt(16)
+            r9.font.color.rgb = gold_accent
+            
+            fact_h = doc.add_heading(level=2)
+            r_fact_h = fact_h.add_run("Factual Basis & Contextual Tracing")
+            r_fact_h.font.bold = True
+            r_fact_h.font.size = DocPt(12)
+            
+            fact_p = doc.add_paragraph()
+            r_fact_c = fact_p.add_run(rationale.get("factual_basis", ""))
+            r_fact_c.font.size = DocPt(10.5)
+            r_fact_c.font.name = "Arial"
+            
+            adapt_h = doc.add_heading(level=2)
+            r_adapt_h = adapt_h.add_run("Creative Adaptations & Pedagogical Choices")
+            r_adapt_h.font.bold = True
+            r_adapt_h.font.size = DocPt(12)
+            
+            adapt_p = doc.add_paragraph()
+            r_adapt_c = adapt_p.add_run(rationale.get("creative_adaptations", ""))
+            r_adapt_c.font.size = DocPt(10.5)
+            r_adapt_c.font.name = "Arial"
         docx_stream = io.BytesIO()
         doc.save(docx_stream)
         docx_stream.seek(0)
